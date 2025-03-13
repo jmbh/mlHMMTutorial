@@ -74,7 +74,7 @@ for(m in 2:4) {
   # layout.show(lo)
   
   ### Left Panel: Transition Matrix
-  plt_h <- plotHeat(gamma_group, cex.axis=1.2, cex.ft=1.2)
+  plt_h <- plotHeat(gamma_group, cex.axis=1.2, cex.from=1.5, cex.to=1.5)
   
   ### Right Panel: Barplot with Random effects
   # Generate x_labels
@@ -112,6 +112,40 @@ for(m in 2:4) {
 } # end loop: m states
 
 
+# --------------------------------------------------------
+# ---------- Figure with 3 Selected Transition Prob ------
+# --------------------------------------------------------
+
+# Same three people as in Data Vizualization
+u_subj <- unique(emotion_mHMM$subj_id)
+n_subj <- length(u_subj)
+set.seed(4)
+v_sel <- sample(1:n_subj, size=3, replace=F) 
+u_subj[v_sel]
+
+# Select model
+m <- 3
+model_m <- l_Models[[m]]
+gamma_subj <- obtain_gamma(model_m, level = "subject")
+
+# Get random effects
+
+# ----- Plotting -----
+sc <- 0.9
+pdf("Figures/Transition_3Selected.pdf", width=10*sc, height=4*sc)
+
+# Layout
+lmat <- rbind(1:3, 
+              4:6)
+lo <- layout(lmat, widths = rep(1, 3), heights = c(0.1, 1))
+# layout.show(lo)
+for(i in 1:3) plotLabel(paste0("Subject ", u_subj[v_sel[i]]), 
+                        cex=1.75, xpos=0.55)
+
+# Heatplot/Data
+for(i in 1:3) plotHeat(gamma_subj[[v_sel[i]]], cex.axis=1.2, cex.from=1.5, cex.to=1.1)
+
+dev.off()
 
 
 

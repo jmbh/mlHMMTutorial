@@ -11,11 +11,11 @@
 # ---------- Plotting Labels in into Canvas --------------
 # --------------------------------------------------------
 
-plotLabel <- function(text, cex=1.4, srt=0) {
+plotLabel <- function(text, cex=1.4, srt=0, xpos=0.5) {
   par(mar=rep(0,4))
   plot.new()
   plot.window(xlim=c(0,1), ylim=c(0,1))
-  text(0.5, 0.5, text, cex=cex, srt=srt)
+  text(xpos, 0.5, text, cex=cex, srt=srt)
 }
 
 
@@ -257,7 +257,8 @@ plotHeat <- function(phi,
                      labels=NULL,
                      las.x=1,
                      cex.axis=1.5,
-                     cex.ft = 1.5,
+                     cex.from = 1.5,
+                     cex.to=1.5,
                      cex.val=1) {
   
   
@@ -295,8 +296,8 @@ plotHeat <- function(phi,
   axis(2, labels = y_labels, at=seq_mp_x, las=2, cex.axis=cex.axis, tick=FALSE)
   title(main, font.main=1)
   
-  title(ylab="From", cex.lab=cex.ft, line=2)
-  mtext("To", side=3, cex=cex.ft, line=2)
+  title(ylab="From", cex.lab=cex.from, line=2)
+  mtext("To", side=3, cex=cex.to, line=2)
   
   phi_col <- matrix(NA, p, p)
   

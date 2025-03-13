@@ -47,8 +47,19 @@ v_nLL_sc <- (v_nLL/max(v_nLL)) * max(v_AICc)
 
 # ----- Make Table -----
 tab_fit <- data.frame(round(rbind(v_nLL, v_AIC, v_AICc)))
-colnames(tab_fit) <- paste0("K = ", 1:6)
+colnames(tab_fit) <- paste0("M = ", 1:6)
 rownames(tab_fit) <- c("-LL", "AIC", "AICc")
 
-xtbl <- xtable(tab_fit, digits=rep(0, 6+1))
+# Drop M = 5,6 models, because we excluded them due to convergence issues
+tab_fit <- tab_fit[, 1:4]
+
+xtbl <- xtable(tab_fit, digits=rep(0, 4+1))
 xtbl # This table is shown in the paper
+
+
+
+
+
+
+
+

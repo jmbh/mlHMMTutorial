@@ -104,6 +104,7 @@ for(m in 1:6) {
 
 # ----- Save -----
 saveRDS(l_RG, file="Files/Convergence_GMStat_4chains.RDS")
+l_RG <- readRDS(file="Files/Convergence_GMStat_4chains.RDS")
 
 # ----- Summarize -----
 # Get means per m and parameter type
