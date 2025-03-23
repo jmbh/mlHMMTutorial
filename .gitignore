@@ -2,6 +2,7 @@
 .Rhistory
 .RData
 .Ruserdata
+.RDataTmp
 Files/RowlandHMMs_rep1.RDS
 Files/RowlandHMMs_rep2.RDS
 Files/RowlandHMMs_rep3.RDS
