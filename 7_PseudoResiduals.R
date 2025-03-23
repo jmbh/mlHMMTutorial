@@ -19,6 +19,7 @@ library(plyr)
 library(dplyr)
 library(RColorBrewer)
 
+
 source("0_Helpers.R")
 
 # --------------------------------------------------------
@@ -39,8 +40,91 @@ l_Models <- readRDS("Files/RowlandHMMs_rep1.RDS")
 # ---------- Get Some Info from Data ---------------------
 # --------------------------------------------------------
 
+labels <- c("happy", "excited", "relaxed", "satisfied",
+            "angry", "anxious", "depressed", "sad")
+
 labels <- colnames(emotion_mHMM)[-1] # Variable names
 v_subj_id <- unique(emotion_mHMM$subj_id) # Unique subject IDs
+
+
+
+# --------------------------------------------------------
+# ---------- Get Numbers for all Variables ---------------
+# --------------------------------------------------------
+
+N_subj <- 125
+m_R2s <- matrix(NA, N_subj, 8)
+m_ARrat <- matrix(NA, N_subj, 8)
+
+for(i in 1:N_subj) {
+  for(j in 1:8) {
+    
+    # Residual Analysis
+    res_ji <- GetResid(data = emotion_mHMM,
+                       model = model_m,
+                       j = j,
+                       i = i)
+    ind_NA <- is.na(res_ji$emp)
+    
+    # Sanity:
+    # plot(res_ji$emp, res_ji$model)
+    # cor(res_ji$emp, res_ji$model, use="complete.obs")^2
+    
+    # Compute R2
+    m_R2s[i, j] <- 1 - var(res_ji$resid[!ind_NA]) / var(res_ji$emp[!ind_NA])
+    
+    # AR ratio
+    dat_ar_emp <- cbind(res_ji$emp[-1], res_ji$emp[-length(res_ji$emp)])
+    ar_emp <- cor(na.omit(ar_ij))[2,1]
+    model_res <- res_ji$resid
+    model_res[ind_NA] <- NA
+    dat_ar_mod <- cbind(model_res[-1], model_res[-length(model_res)])
+    ar_res <- cor(na.omit(dat_ar_mod))[2,1]
+    m_ARrat[i, j] <- ar_res / ar_emp
+  }
+  print(i)
+}
+
+# ----- Save Results -----
+saveRDS(m_R2s, "Files/Residual_R2.RDS")
+saveRDS(m_ARrat, "Files/Residual_ARrat.RDS")
+
+# ---- Make Figures -----
+n_dep <- 8
+cols <- brewer.pal(n_dep+1, "Set1")[-6]
+
+df_R2s <- data.frame(m_R2s)
+df_ARrat <- data.frame(m_ARrat)
+colnames(df_R2s) <- colnames(df_ARrat) <- labels
+
+pdf("Figures/ResidualAnalysis_R2s.pdf", width=8, height=5)
+boxplot(df_R2s, col=cols, axes=FALSE)
+axis(1, labels=labels, at=1:8, las=2)
+axis(2, las=2)
+title(ylab=expression(R^2))
+dev.off()
+
+pdf("Figures/ResidualAnalysis_VARrat.pdf", width=8, height=5)
+boxplot(df_ARrat, col=cols, axes=FALSE)
+abline(h=1)
+axis(1, labels=labels, at=1:8, las=2)
+axis(2, las=2)
+title(ylab="AR(residual)  / AR(data)")
+dev.off()
+
+# ----- Some sanity checking -----
+which(df_R2s[, 6] < -0.8)
+v_subj_id[87]
+
+res_ji <- GetResid(data = emotion_mHMM,
+                   model = model_m,
+                   j = 6,
+                   i = 87)
+
+data_s <- emotion_mHMM[emotion_mHMM$subj_id == v_subj_id[87], ]
+plot(res_ji$emp, type="l", ylim=c(0,8))
+lines(res_ji$model, col="red")
+legend("topright", legend=c("data", "HMM prediction"), text.col=c("black", "red"), bty="n")
 
 
 # --------------------------------------------------------
@@ -81,7 +165,7 @@ for(m in 1:6) {
     # Get predictions, residuals
     res_1i <- GetResid(data = emotion_mHMM, 
                        model = model_m,
-                       j = 1,
+                       j = 1, # Variable
                        i = v_sel[s]) # This function is in 0_Helpers.R
     
     # Plot data + Predictions

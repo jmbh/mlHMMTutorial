@@ -129,6 +129,9 @@ for(m in 2:4) {
 # ---------- Make Figure: Sad/Happy k=3, for 5 people ----
 # --------------------------------------------------------
 
+# Person 1,2 show no label switching; the other three do
+# We selected those based on the comprehensive plots below
+v_sel_p <- c(1, 2, 12, 32, 42)
 
 # ----- Plotting -----
 pdf("Figures/Fig_Tutorial_CheckLabelSwitching_5pers.pdf", width=6, height=9)
@@ -146,7 +149,7 @@ lo <- layout(mat=lmat, widths = c(0.2, 1, 1), heights = c(0.2, rep(1, 5)))
 # Plot labels
 plotLabel("Mean Happy")
 plotLabel("Mean Sad")
-for(i in 1:5) plotLabel(paste0("Person ", cnt+i-1), srt=90)
+for(i in 1:5) plotLabel(paste0("Person ", v_sel_p[i]), srt=90)
 
 
 par(mar=c(2,2,1,1))
@@ -159,7 +162,7 @@ for(i in 1:5) {
   grid()
   if(i==1) legend("bottom", legend=paste0("State ", 1:3), text.col=cols, bty="n", horiz = TRUE)
   # Happy
-  for(j in 1:3) lines(model_m$PD_subj[[i]]$cont_emiss[, j], type="l", col=cols[j], lwd=1)
+  for(j in 1:3) lines(model_m$PD_subj[[v_sel_p[i]]]$cont_emiss[, j], type="l", col=cols[j], lwd=1)
 
   plot.new()
   plot.window(xlim=c(1000, 2000), ylim=c(-10, 110))
@@ -167,7 +170,7 @@ for(i in 1:5) {
   axis(2, las=2)
   grid()
   # Sad
-  for(j in 22:24) lines(1000:2000, model_m$PD_subj[[i]]$cont_emiss[1000:2000, j], type="l", col=cols[j-21], lwd=1)
+  for(j in 22:24) lines(1000:2000, model_m$PD_subj[[v_sel_p[i]]]$cont_emiss[1000:2000, j], type="l", col=cols[j-21], lwd=1)
 
 }
 
