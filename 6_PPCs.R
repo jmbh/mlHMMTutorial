@@ -1,4 +1,4 @@
-# jonashaslbeck@protonmail.com; Feb 5th, 2025
+# jonashaslbeck@protonmail.com; March 26th, 2025
 
 # --------------------------------------------------------
 # ---------- What is happening here? ---------------------
@@ -168,7 +168,7 @@ for(i in c(1,8)) {
                   text.col = c("black", cols), bty="n", cex=1.2)
   
   # Plot Data
-  lines(den_emp, lwd=2)
+  lines(den_emp, lwd=2, lty=2)
   # Fetch simulated w-p means
   for(m in 1:m_max) {
     pw_means_sim <- l_Ms[[m]][, -1][, i]
@@ -190,7 +190,7 @@ for(i in c(1,8)) {
   axis(2, las=2)
   title(ylab="Density")
   # Plot Data
-  lines(den_emp, lwd=2)
+  lines(den_emp, lwd=2, lty=2)
   # Fetch simulated w-p means
   for(m in 1:m_max) {
     pw_SDs_sim <- l_SDs[[m]][, -1][, i]

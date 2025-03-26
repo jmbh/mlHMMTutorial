@@ -54,6 +54,7 @@ v_subj_id <- unique(emotion_mHMM$subj_id) # Unique subject IDs
 
 N_subj <- 125
 m_R2s <- matrix(NA, N_subj, 8)
+m_RMSE <- matrix(NA, N_subj, 8)
 m_ARrat <- matrix(NA, N_subj, 8)
 
 for(i in 1:N_subj) {
@@ -64,6 +65,10 @@ for(i in 1:N_subj) {
                        model = model_m,
                        j = j,
                        i = i)
+    
+    # Save RMSE
+    m_RMSE[i, j] <- res_ji$RMSE
+    
     ind_NA <- is.na(res_ji$emp)
     
     # Sanity:
@@ -87,7 +92,12 @@ for(i in 1:N_subj) {
 
 # ----- Save Results -----
 saveRDS(m_R2s, "Files/Residual_R2.RDS")
+saveRDS(m_RMSE, "Files/Residual_RMSE.RDS")
 saveRDS(m_ARrat, "Files/Residual_ARrat.RDS")
+
+# ---- Values reported in the paper -----
+range(round(apply(m_RMSE, 2, median)))
+1-range(round(apply(m_ARrat, 2, median), 2))
 
 # ---- Make Figures -----
 n_dep <- 8
@@ -95,13 +105,25 @@ cols <- brewer.pal(n_dep+1, "Set1")[-6]
 
 df_R2s <- data.frame(m_R2s)
 df_ARrat <- data.frame(m_ARrat)
-colnames(df_R2s) <- colnames(df_ARrat) <- labels
+df_RMSE <- data.frame(m_RMSE)
+colnames(df_R2s) <- colnames(df_ARrat) <- colnames(df_RMSE)  <- labels
 
 pdf("Figures/ResidualAnalysis_R2s.pdf", width=8, height=5)
 boxplot(df_R2s, col=cols, axes=FALSE)
 axis(1, labels=labels, at=1:8, las=2)
 axis(2, las=2)
+grid()
+boxplot(df_R2s, col=cols, axes=FALSE, add=TRUE)
 title(ylab=expression(R^2))
+dev.off()
+
+pdf("Figures/ResidualAnalysis_RMSEs.pdf", width=8, height=5)
+boxplot(df_RMSE, col=cols, axes=FALSE)
+axis(1, labels=labels, at=1:8, las=2)
+axis(2, las=2)
+grid()
+boxplot(df_RMSE, col=cols, axes=FALSE, add=TRUE)
+title(ylab="RMSE")
 dev.off()
 
 pdf("Figures/ResidualAnalysis_VARrat.pdf", width=8, height=5)
@@ -109,6 +131,8 @@ boxplot(df_ARrat, col=cols, axes=FALSE)
 abline(h=1)
 axis(1, labels=labels, at=1:8, las=2)
 axis(2, las=2)
+grid()
+boxplot(df_ARrat, col=cols, axes=FALSE, add=TRUE)
 title(ylab="AR(residual)  / AR(data)")
 dev.off()
 
