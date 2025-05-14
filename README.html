@@ -361,7 +361,7 @@ In the tutorial, we use the open data from <a href="https://link.springer.com/ar
 version of these data from <a href="https://psycnet.apa.org/fulltext/2023-72233-001.html">Haslbeck et
 al. (2023)</a>.</p>
 <p>The tutorial itself is in the paper:</p>
-<p>XXX</p>
+<p>XXX FILL IN LINK TO PREPRINT HERE XXX</p>
 <p>This repository contains the following files and folders:</p>
 <ul>
 <li><code>0_Helpers.R</code> contains helper functions used
@@ -372,17 +372,34 @@ observations during the night. Saves a new dataframe
 <code>data_Rowland2020_wN_DF.RDS</code> in the folder <code>/Data</code>
 which is the dataframe that is being used for all subsequent
 analyses.</li>
-<li><code>2_ExploreData.R</code> creates a Figure 8 in the paper,
+<li><code>2_VisualizeData.R</code> creates a Figure 8 in the paper,
 showing the time series of variables Happy and Sad for three randomly
 selected persons</li>
 <li><code>3_EstimateModels.R</code> Specifies starting values and priors
-and fits mlHMMs on the data with a seqence of 1:6 states. It runs four
+and fits mlHMMs on the data with a sequence of 1:6 states. It runs four
 chains separately, saves as <code>RowlandHMMs_repX.RDS</code> into the
 folder <code>/Files</code>. We run four chains, so that we can assess
 convergence.</li>
-<li><code>4_ModelFit.R</code> takes the fitted model (chain 1), extracts
+<li><code>4_LabelSwitching.R</code> Creates trace plots of all
+parameters, for all chains, for all subjects to assess label
+switching.</li>
+<li><code>5_Convergence.R</code> uses the four estimated chains to make
+trace plots (shown in the appendix) and GR-statistics (shown in Table 3)
+for the models with 1:6 states</li>
+<li><code>6_ModelFit.R</code> takes the fitted model (chain 1), extracts
 the LL, AIC, and AICc, and compiles them into Table 2 in the paper</li>
-<li></li>
+<li><code>7_InspectParameters.R</code> extracts fixed and random effects
+parameters of emission distributions and transition probability matrices
+and plots associated figures shown in the paper and the appendix.</li>
+<li><code>8_PPCs.R</code> performs Posterior Predictive Checks (PPCs) on
+the distribution of within-person means and within-person standard
+deviations for the models with 1:4 and plots the corresponding figures
+in the paper and the appendix.</li>
+<li><code>9_PseudoResiduals.R</code> performs a pseudoresidual analysis
+for the three subjects shown also in Figure 8 for the sequence of models
+with 1:6 states, and plots associated figures. It also plots the
+residuals for all persons and all variables, for models with 1:m states,
+an analysis that is only mentioned and not shown in the paper.</li>
 </ul>
 </div>
 

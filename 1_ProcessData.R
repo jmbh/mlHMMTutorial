@@ -86,7 +86,9 @@ emotion_mHMM <- data.frame(subj_id = data_wN$subj_id,
 # ---------- Save ----------------------------------------
 # --------------------------------------------------------
 
-saveRDS(emotion_mHMM, "Data/data_Rowland2020_wN_DF.RDS") # These data are used for all subsequent analyses
+saveRDS(emotion_mHMM, "Data/data_Rowland2020_wN_DF.RDS")
+
+# These data are used for all subsequent analyses
 
 
 
