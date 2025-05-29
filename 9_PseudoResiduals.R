@@ -280,66 +280,102 @@ for(m in 1:4) {
 # --------------------------------------------------------
 
 
+# ----- Get predicted states for person -----
+# Needed to condition on estimated states
+l_Models <- readRDS("Files/RowlandHMMs_rep1.RDS")
+model_m <- l_Models[[3]]
+emotion_states_2st <- vit_mHMM(model_m, emotion_mHMM)
+
 # ---------- Get residual matrix & cors for every person --------
 
 l_ResDat <- list()
 l_ResCorm <- list()
+l_ResCorm1 <- l_ResCorm2 <- l_ResCorm3 <- list()
 
 for(i in 1:N_subj) {
-  m_data <- matrix(NA, length(l_resid[[i]][[1]]$resid), 8)
-  for(j in 1:8) m_data[, j] <- l_resid[[i]][[j]]$resid
+  m_resid <- matrix(NA, length(l_resid[[i]][[1]]$resid), 8)
+  for(j in 1:8) m_resid[, j] <- l_resid[[i]][[j]]$resid
   l_ResDat[[i]] <- m_data
-  l_ResCorm[[i]] <- cor(m_data, use="complete.obs")
+  l_ResCorm[[i]] <- cor(m_resid, use="complete.obs")
+  
+  # Compute Residual covs separately for states
+  states_i <- emotion_states_2st$state[emotion_states_2st$subj==v_subj_id[i]] 
+  if(sum(states_i==1) > 1) l_ResCorm1[[i]] <- cor( m_resid[states_i==1, ], use="complete.obs") else l_ResCorm1[[i]] <- matrix(NA, 8, 8)
+  if(sum(states_i==2) > 1) l_ResCorm2[[i]] <- cor( m_resid[states_i==2, ], use="complete.obs") else l_ResCorm2[[i]] <- matrix(NA, 8, 8)
+  if(sum(states_i==3) > 1) l_ResCorm3[[i]] <- cor( m_resid[states_i==3, ], use="complete.obs") else l_ResCorm3[[i]] <- matrix(NA, 8, 8)
 }
 
 a_ResCorm <- simplify2array(l_ResCorm)
-class(a_ResCorm)
-dim(a_ResCorm)
+
+a_ResCorm1 <- simplify2array(l_ResCorm1)
+a_ResCorm2 <- simplify2array(l_ResCorm2)
+a_ResCorm3 <- simplify2array(l_ResCorm3)
 
 
-# ---------- Aggregate & Inspect --------
+
+# ---------- Overall: Mean & Inspect --------
 
 # Compute
 ResCorm_mean <- apply(a_ResCorm, 1:2, mean)
 round(ResCorm_mean, 2)
 
-# Visualize
-cor_mat <- ResCorm_mean
-var_labels <- c("Var A", "Var B", "Var C", "Var D")  # adjust as needed
-rownames(cor_mat) <- labels
-colnames(cor_mat) <- labels
+plotHeat <- function(corm, title=NULL) {
+  
+  # Visualize
+  cor_mat <- corm
+  rownames(cor_mat) <- labels
+  colnames(cor_mat) <- labels
+  
+  # Convert to long format
+  cor_df <- as.data.frame(as.table(cor_mat))
+  names(cor_df) <- c("Var1", "Var2", "Correlation")
+  
+  # 2. Filter to upper triangle only (excluding diagonal)
+  cor_df <- cor_df[as.numeric(factor(cor_df$Var1, levels = labels)) <
+                     as.numeric(factor(cor_df$Var2, levels = labels)), ]
+  
+  # 3. Add text labels
+  cor_df$label <- sprintf("%.2f", cor_df$Correlation)
+  
+  # Plot
+  ggplot(cor_df, aes(x = Var1, y = Var2, fill = Correlation)) +
+    geom_tile() +
+    geom_text(aes(label = label), size = 4) +
+    scale_fill_gradient2(low = "blue", high = "red", mid = "white",
+                         midpoint = 0, limit = c(-1, 1)) +
+    theme_minimal() +
+    labs(x = NULL, y = NULL, title=title) +
+    coord_fixed() +
+    theme(axis.text.x = element_text(angle = 45, hjust = 1))
+  
+}
+p1 <- plotHeat(ResCorm_mean, title="All States")
 
-# Convert to long format
-cor_df <- as.data.frame(as.table(cor_mat))
-names(cor_df) <- c("Var1", "Var2", "Correlation")
-
-# 2. Filter to upper triangle only (excluding diagonal)
-cor_df <- cor_df[as.numeric(factor(cor_df$Var1, levels = labels)) <
-                   as.numeric(factor(cor_df$Var2, levels = labels)), ]
-
-# 3. Add text labels
-cor_df$label <- sprintf("%.2f", cor_df$Correlation)
-
-# Plot
-ggplot(cor_df, aes(x = Var1, y = Var2, fill = Correlation)) +
-  geom_tile() +
-  geom_text(aes(label = label), size = 4) +
-  scale_fill_gradient2(low = "blue", high = "red", mid = "white",
-                       midpoint = 0, limit = c(-1, 1)) +
-  theme_minimal() +
-  coord_fixed() +
-  theme(axis.text.x = element_text(angle = 45, hjust = 1))
 
 # Alright, quite some residuals left
 
+# SDs
+ResCorm_SD <- apply(a_ResCorm, 1:2, sd)
+round(ResCorm_SD, 2) # huge between-person variation in residual correlations
 
 
+# ---------- State-Specific: Mean & Inspect --------
 
+ResCorm1_mean <- apply(a_ResCorm1, 1:2, mean, na.rm=T)
+round(ResCorm1_mean, 2)
+p2 <- plotHeat(ResCorm1_mean, title="State = 1")
 
-# ---------- Look at Residuals per State --------
+ResCorm2_mean <- apply(a_ResCorm2, 1:2, mean, na.rm=T)
+round(ResCorm2_mean, 2)
+p3 <- plotHeat(ResCorm2_mean, title="State = 1")
 
-# because that's what we would be modeling basically
+ResCorm3_mean <- apply(a_ResCorm3, 1:2, mean, na.rm=T)
+round(ResCorm3_mean, 2)
+p3 <- plotHeat(ResCorm3_mean, title="State = 1")
 
+# Plot layout
+library(patchwork)
+(p1 | p2) / (p3 | p4)
 
 
 
