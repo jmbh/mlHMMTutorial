@@ -1,4 +1,4 @@
-# jonashaslbeck@protonmail.com; Feb 5th, 2025
+# jonashaslbeck@protonmail.com; May 29th, 2025
 
 # --------------------------------------------------------
 # ---------- What is happening here? ---------------------
@@ -18,6 +18,8 @@ library(xtable)
 library(plyr)
 library(dplyr)
 library(RColorBrewer)
+
+library(ggplot2)
 
 
 source("0_Helpers.R")
@@ -57,14 +59,19 @@ m_R2s <- matrix(NA, N_subj, 8)
 m_RMSE <- matrix(NA, N_subj, 8)
 m_ARrat <- matrix(NA, N_subj, 8)
 
+l_resid <- list()
+
 for(i in 1:N_subj) {
+  
+  l_resid_j <- list()
+  
   for(j in 1:8) {
     
     # Residual Analysis
-    res_ji <- GetResid(data = emotion_mHMM,
-                       model = model_m,
-                       j = j,
-                       i = i)
+    l_resid_j[[j]] <-  res_ji <- GetResid(data = emotion_mHMM,
+                                          model = model_m,
+                                          j = j,
+                                          i = i)
     
     # Save RMSE
     m_RMSE[i, j] <- res_ji$RMSE
@@ -87,6 +94,8 @@ for(i in 1:N_subj) {
     ar_res <- cor(na.omit(dat_ar_mod))[2,1]
     m_ARrat[i, j] <- ar_res / ar_emp
   }
+  
+  l_resid[[i]] <- l_resid_j
   print(i)
 }
 
@@ -244,7 +253,7 @@ for(m in 1:4) {
   # Make layout
   lmat <- matrix(1:16, ncol=4, byrow = TRUE)
   lo <- layout(mat=lmat, widths = rep(c(1, .5), 2))
-
+  
   for(i in 1:N_subj) {
     for(j in 1:8) {
       
@@ -263,6 +272,81 @@ for(m in 1:4) {
   dev.off()
   
 } # end for: m
+
+
+
+# --------------------------------------------------------
+# ---------- Look at Residual Correlations ---------------
+# --------------------------------------------------------
+
+
+# ---------- Get residual matrix & cors for every person --------
+
+l_ResDat <- list()
+l_ResCorm <- list()
+
+for(i in 1:N_subj) {
+  m_data <- matrix(NA, length(l_resid[[i]][[1]]$resid), 8)
+  for(j in 1:8) m_data[, j] <- l_resid[[i]][[j]]$resid
+  l_ResDat[[i]] <- m_data
+  l_ResCorm[[i]] <- cor(m_data, use="complete.obs")
+}
+
+a_ResCorm <- simplify2array(l_ResCorm)
+class(a_ResCorm)
+dim(a_ResCorm)
+
+
+# ---------- Aggregate & Inspect --------
+
+# Compute
+ResCorm_mean <- apply(a_ResCorm, 1:2, mean)
+round(ResCorm_mean, 2)
+
+# Visualize
+cor_mat <- ResCorm_mean
+var_labels <- c("Var A", "Var B", "Var C", "Var D")  # adjust as needed
+rownames(cor_mat) <- labels
+colnames(cor_mat) <- labels
+
+# Convert to long format
+cor_df <- as.data.frame(as.table(cor_mat))
+names(cor_df) <- c("Var1", "Var2", "Correlation")
+
+# 2. Filter to upper triangle only (excluding diagonal)
+cor_df <- cor_df[as.numeric(factor(cor_df$Var1, levels = labels)) <
+                   as.numeric(factor(cor_df$Var2, levels = labels)), ]
+
+# 3. Add text labels
+cor_df$label <- sprintf("%.2f", cor_df$Correlation)
+
+# Plot
+ggplot(cor_df, aes(x = Var1, y = Var2, fill = Correlation)) +
+  geom_tile() +
+  geom_text(aes(label = label), size = 4) +
+  scale_fill_gradient2(low = "blue", high = "red", mid = "white",
+                       midpoint = 0, limit = c(-1, 1)) +
+  theme_minimal() +
+  coord_fixed() +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1))
+
+# Alright, quite some residuals left
+
+
+
+
+
+# ---------- Look at Residuals per State --------
+
+# because that's what we would be modeling basically
+
+
+
+
+
+
+
+
 
 
 
