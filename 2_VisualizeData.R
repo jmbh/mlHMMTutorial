@@ -72,3 +72,34 @@ for(i in 1:3) {
 
 dev.off()
 
+# --------------------------------------------------------
+# ---------- Visualize Data: All Variables, All Persons --
+# --------------------------------------------------------
+
+pdf("Figures/Rowland_AllPersons.pdf", width=8, height = 4)
+
+par(mfrow=c(2,4), mar=c(4,3,2.5,1))
+
+for(i in 1:n_subj) {
+  
+  # Data
+  data_i <- emotion_mHMM[emotion_mHMM$subj_id == u_subj[i], ]
+  labels <- colnames(data_i)[-1]
+  
+  for(j in 1:8) {
+    plot.new()
+    plot.window(xlim=c(1,600), ylim=c(0, 100))
+    axis(1, las=2)
+    axis(2, las=1)
+    lines(data_i[, j+1])
+    title(main=paste0(labels[j], " [Person ", data_i[1,1], "]"), font.main=1)
+  }
+  
+  
+}
+
+dev.off()
+
+
+
+

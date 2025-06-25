@@ -367,15 +367,17 @@ p2 <- plotHeat(ResCorm1_mean, title="State = 1")
 
 ResCorm2_mean <- apply(a_ResCorm2, 1:2, mean, na.rm=T)
 round(ResCorm2_mean, 2)
-p3 <- plotHeat(ResCorm2_mean, title="State = 1")
+p3 <- plotHeat(ResCorm2_mean, title="State = 2")
 
 ResCorm3_mean <- apply(a_ResCorm3, 1:2, mean, na.rm=T)
 round(ResCorm3_mean, 2)
-p3 <- plotHeat(ResCorm3_mean, title="State = 1")
+p4 <- plotHeat(ResCorm3_mean, title="State = 3")
 
 # Plot layout
 library(patchwork)
+pdf("Figures/ResidualCors.pdf", width=12, height = 12)
 (p1 | p2) / (p3 | p4)
+dev.off()
 
 
 
